@@ -1,7 +1,7 @@
 #! /bin/bash
 
 IMAGE_NAME="floxxity-docker-ttyd"
-PORT = "7681"
+PORT="7681"
 
 echo "Building Docker image: $IMAGE_NAME..."
 docker build -t $IMAGE_NAME .
