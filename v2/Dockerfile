@@ -1,12 +1,22 @@
-FROM ubuntu:22.04 
+FROM ubuntu:22.04
 
+USER root
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN apt update && apt upgrade -y \
-    && apt install -y \
-       ttyd \
-       && apt clean
+# Install ttyd and clean up to keep image small
+RUN apt-get update && apt-get install -y \
+    ttyd \
+    && rm -rf /var/lib/apt/lists/*
 
-EXPOSE 7681 
+# Create a non-root user with UID 1000 (required by HuggingFace)
+RUN useradd -m -u 1000 user && echo "user ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+USER user
+WORKDIR /home/user
 
-CMD ["ttyd", "-port", "7681", "--interface", "0.0.0.0", "bash"]
+# Copy startup script into container
+COPY --chown=user:user run.sh /home/user/run.sh
+RUN chmod +x /home/user/run.sh
+
+EXPOSE 7681
+
+ENTRYPOINT ["/home/user/run.sh"]
